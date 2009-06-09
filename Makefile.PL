@@ -5,9 +5,13 @@ all_from 'lib/CatalystX/Component/Traits.pm';
 author   'Rafael Kitover <rkitover@cpan.org>';
 license  'perl';
 
-build_requires 'Test::More';
+test_requires 'Test::More';
 
+requires 'Catalyst::Runtime'         => '5.80005';
+requires 'MooseX::Traits::Pluggable' => '0.04';
+requires 'namespace::autoclean';
+requires 'Moose::Autobox';
+
+auto_provides;
 auto_install;
-
 WriteAll;
-

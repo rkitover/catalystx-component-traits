@@ -1,7 +1,10 @@
 package CatalystX::Component::Traits;
 
-use strict;
-use warnings;
+use namespace::autoclean;
+use Moose::Role;
+use Moose::Autobox;
+use Carp;
+with 'MooseX::Traits::Pluggable' => { excludes => ['_find_trait'] };
 
 =head1 NAME
 
@@ -14,7 +17,8 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION   = '0.01';
+our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
 
@@ -29,6 +33,45 @@ our $VERSION = '0.01';
     __PACKAGE__->config('Model::MyModel' => {
         traits => ['SearchedForTrait', '+Fully::Qualified::Trait']
     });    
+
+=head1 DESCRIPTION
+
+Adds a L<Catalyst::Component/COMPONENT> method to your L<Catalyst> component
+base class that reads the optional C<traits> parameter from app and component
+config and instantiates the component subclass with those traits using
+L<MooseX::Traits/new_with_traits> from L<MooseX::Traits::Pluggable>.
+
+=cut
+
+has '_trait_namespace' => (default => '+Trait');
+
+sub COMPONENT {
+    my ($class, $app, $args) = @_;
+
+    $args = $class->merge_config_hashes($class->config, $args);
+
+    if (my $traits = delete $args->{traits}) {
+	return $class->new_with_traits(
+	    traits => $traits,
+	    %$args
+	);
+    }
+
+    return $class->new($args);
+}
+
+sub _find_trait {
+    my ($class, $base, $name) = @_;
+
+    my @search_ns = $class->meta->class_precedence_list;
+
+    for my $ns (@search_ns) {
+        my $full = "${ns}::${base}::${name}";
+        return $full if eval { Class::MOP::load_class($full) };
+    }
+
+    croak "Could not find a class for trait: $name";
+}
 
 =head1 AUTHOR
 
@@ -68,7 +111,7 @@ L<http://search.cpan.org/dist/CatalystX-Component-Traits/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Matt S. Trout came up with the current design
+Matt S. Trout and Tomas Doran helped me with the current design.
 
 =head1 COPYRIGHT & LICENSE
 
