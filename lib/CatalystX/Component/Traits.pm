@@ -4,6 +4,7 @@ use namespace::autoclean;
 use Moose::Role;
 use Moose::Autobox;
 use Carp;
+use List::MoreUtils 'firstidx';
 with 'MooseX::Traits::Pluggable' => { excludes => ['_find_trait'] };
 
 =head1 NAME
@@ -41,6 +42,36 @@ base class that reads the optional C<traits> parameter from app and component
 config and instantiates the component subclass with those traits using
 L<MooseX::Traits/new_with_traits> from L<MooseX::Traits::Pluggable>.
 
+=head1 TRAIT SEARCH
+
+Trait names qualified with a C<+> are taken to be full package names.
+
+Unqualified names are searched for, using the algorithm described below.
+
+=head2 EXAMPLE
+
+Suppose your inheritance hierarchy is:
+
+    MyApp::Model::MyModel
+    MyAppBase::Model::BaseModel
+    Catalyst::Model::CatModel
+    Catalyst::Model
+    Catalyst::Component
+    Moose::Object
+
+The configuration is:
+
+    traits => ['Foo']
+
+The package search order for C<Foo> will be:
+
+    MyApp::TraitFor::Model::CatModel::Foo,
+    MyAppBase::TraitFor::Model::CatModel::Foo,
+    Catalyst::TraitFor::Model::CatModel::Foo,
+    Catalyst::TraitFor::Model::Foo,
+    Catalyst::TraitFor::Component::Foo,
+    MooseX::TraitFor::Object::Foo
+
 =cut
 
 has '_trait_namespace' => (default => '+Trait');
@@ -51,10 +82,10 @@ sub COMPONENT {
     $args = $class->merge_config_hashes($class->config, $args);
 
     if (my $traits = delete $args->{traits}) {
-	return $class->new_with_traits(
+	return $class->new_with_traits({
 	    traits => $traits,
 	    %$args
-	);
+	});
     }
 
     return $class->new($args);
@@ -63,14 +94,39 @@ sub COMPONENT {
 sub _find_trait {
     my ($class, $base, $name) = @_;
 
-    my @search_ns = $class->meta->class_precedence_list;
-
-    for my $ns (@search_ns) {
-        my $full = "${ns}::${base}::${name}";
-        return $full if eval { Class::MOP::load_class($full) };
+    for my $trait ($class->_trait_search_order($base, $name)) {
+        return $trait if eval { Class::MOP::load_class($trait) };
     }
 
     croak "Could not find a class for trait: $name";
+}
+
+sub _trait_search_order {
+    my ($class, $base, $name) = @_;
+
+    my @search_ns = $class->meta->class_precedence_list;
+
+    my $parent_idx    = firstidx { /^Catalyst::/ } @search_ns;
+    my $parent        = $search_ns[$parent_idx];
+    my ($parent_name) = $parent =~ /^Catalyst::(.*)/;
+
+    my @res;
+
+    for my $ns (@search_ns[0 .. $parent_idx]) {
+	my ($part) = $ns =~ /^([^:]+)/;
+	push @res, "${part}::${base}For::${parent_name}::$name";
+	last if $part eq 'Catalyst';
+    }
+    for my $ns (@search_ns[($parent_idx+1) .. $#search_ns]) {
+	my ($part, $rest) = split /::/, $ns, 2;
+
+	# no non-core crap in the Moose:: namespace
+	$part = 'MooseX' if $part eq 'Moose';
+	
+	push @res, "${part}::${base}For::${rest}::$name";
+    }
+
+    @res;
 }
 
 =head1 AUTHOR

@@ -11,6 +11,7 @@ requires 'Catalyst::Runtime'         => '5.80005';
 requires 'MooseX::Traits::Pluggable' => '0.04';
 requires 'namespace::autoclean';
 requires 'Moose::Autobox';
+requires 'List::MoreUtils';
 
 auto_provides;
 auto_install;
