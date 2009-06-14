@@ -74,7 +74,7 @@ The package search order for C<Foo> will be:
 
 =cut
 
-has '_trait_namespace' => (default => '+Trait');
+has '_trait_namespace' => (is => 'ro', default => '+Trait');
 
 sub COMPONENT {
     my ($class, $app, $args) = @_;
