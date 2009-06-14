@@ -8,18 +8,18 @@ use Test::More tests => 2;
     extends 'Catalyst::Model';
     with 'CatalystX::Component::Traits';
 
-    package MyAppBase::Model::AModel;
+    package My::AppBase::Model::AModel;
     use base 'Catalyst::Model::SomeModel';
 
-    package MyApp::Model::AModel;
-    use base 'MyAppBase::Model::AModel';
+    package My::App::Model::AModel;
+    use base 'My::AppBase::Model::AModel';
 }
 
-ok((my $instance = MyApp::Model::AModel->new), 'instance');
+ok((my $instance = My::App::Model::AModel->new), 'instance');
 
 is_deeply [$instance->_trait_search_order('Trait', 'Foo')], [
-    'MyApp::TraitFor::Model::SomeModel::Foo',
-    'MyAppBase::TraitFor::Model::SomeModel::Foo',
+    'My::App::TraitFor::Model::SomeModel::Foo',
+    'My::AppBase::TraitFor::Model::SomeModel::Foo',
     'Catalyst::TraitFor::Model::SomeModel::Foo',
     'Catalyst::TraitFor::Model::Foo',
     'Catalyst::TraitFor::Component::Foo',

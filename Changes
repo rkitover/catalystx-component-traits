@@ -1,4 +1,7 @@
 Revision history for CatalystX-Component-Traits
 
+0.02  2009-06-14 17:08:55
+    - fix for namespaced apps
+
 0.01  2009-06-13 22:30:38
     - first release
