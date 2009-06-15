@@ -15,4 +15,8 @@ requires 'List::MoreUtils';
 
 auto_provides;
 auto_install;
+
+resources repository =>
+    'git://github.com/rkitover/catalystx-component-traits.git';
+
 WriteAll;
