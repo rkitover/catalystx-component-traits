@@ -14,11 +14,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =cut
 
-our $VERSION   = '0.02';
+our $VERSION   = '0.03';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
@@ -53,7 +53,6 @@ Unqualified names are searched for, using the algorithm described below.
 Suppose your inheritance hierarchy is:
 
     MyApp::Model::MyModel
-    MyAppBase::Model::BaseModel
     Catalyst::Model::CatModel
     Catalyst::Model
     Catalyst::Component
@@ -65,12 +64,8 @@ The configuration is:
 
 The package search order for C<Foo> will be:
 
-    MyApp::TraitFor::Model::CatModel::Foo,
-    MyAppBase::TraitFor::Model::CatModel::Foo,
-    Catalyst::TraitFor::Model::CatModel::Foo,
-    Catalyst::TraitFor::Model::Foo,
-    Catalyst::TraitFor::Component::Foo,
-    MooseX::TraitFor::Object::Foo
+    MyApp::TraitFor::Model::CatModel::Foo
+    Catalyst::TraitFor::Model::CatModel::Foo
 
 =cut
 
@@ -116,19 +111,23 @@ sub _trait_search_order {
     for my $ns (@search_ns[0 .. $parent_idx]) {
 	my ($part) = $ns =~ /^(.+?)::$parent_part/;
 	push @res, "${part}::${base}For::${parent_name}::$name";
-	last if $part eq 'Catalyst';
-    }
-    for my $ns (@search_ns[($parent_idx+1) .. $#search_ns]) {
-	my ($part, $rest) = split /::/, $ns, 2;
-
-	# no non-core crap in the Moose:: namespace
-	$part = 'MooseX' if $part eq 'Moose';
-	
-	push @res, "${part}::${base}For::${rest}::$name";
     }
 
     @res;
 }
+
+# we'll come back to this later...
+#    for my $ns (@search_ns[($parent_idx+1) .. $#search_ns]) {
+#	my ($part, $rest) = split /::/, $ns, 2;
+#
+#	# no non-core crap in the Moose:: namespace
+#	$part = 'MooseX' if $part eq 'Moose';
+#	
+#	push @res, "${part}::${base}For::${rest}::$name";
+#    }
+#
+#    @res;
+#}
 
 =head1 AUTHOR
 

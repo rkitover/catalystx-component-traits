@@ -1,5 +1,8 @@
 Revision history for CatalystX-Component-Traits
 
+0.03  2009-06-15 16:11:11
+    - changed trait search algorithm to the one agreed to on #catalyst-dev
+
 0.02  2009-06-14 17:08:55
     - fix for namespaced apps
 
