@@ -2,12 +2,15 @@ use strict;
 use warnings;
 use Test::More;
 
-unless (eval { require MooseX::MethodAttributes; MooseX::MethodAttributes->VERSION('0.14') }) {
-    plan skip_all => 'Need MooseX::MethodAttributes 0.14 for this test';
+unless (
+    eval { require version; require MooseX::MethodAttributes; MooseX::MethodAttributes->VERSION('0.14_01'); }
+    and eval { require MooseX::Traits::Pluggable; MooseX::Traits::Pluggable->VERSION('0.05'); }
+) {
+    plan skip_all => 'Need MooseX::MethodAttributes 0.14_01 and MooseX::Traits::Pluggable 0.05 for this test';
     exit;
 }
 
-plan tests => 2;
+plan tests => 4;
 
 {
     package My::Role;
@@ -28,4 +31,8 @@ my $app = bless {}, 'MyApp';
 my $i = eval { My::Controller->COMPONENT($app, { traits => '+My::Role' } ) };
 ok $i;
 ok !$@ or warn $@;
+my $meta = $i->meta;
+ok $meta->can('get_method_attributes');
+my $attr = $meta->get_method_attributes( $i->can('foo') );
+is_deeply $attr, ['Action'];
 
