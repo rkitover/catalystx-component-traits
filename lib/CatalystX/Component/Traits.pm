@@ -14,11 +14,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION   = '0.03';
+our $VERSION   = '0.04';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
@@ -67,6 +67,28 @@ The package search order for C<Foo> will be:
     MyApp::TraitFor::Model::CatModel::Foo
     Catalyst::TraitFor::Model::CatModel::Foo
 
+=head2 A MORE PATHOLOGICAL EXAMPLE
+
+For:
+
+    My::App::Controller::AController
+    CatalystX::Something::ControllerBase::SomeController
+    Catalyst::Controller
+    Catalyst::Model
+    Catalyst::Component
+    Moose::Object 
+
+With:
+
+    traits => ['Foo']
+
+Search order for C<Foo> will be:
+
+    My::App::TraitFor::Controller::SomeController::Foo
+    CatalystX::Something::TraitFor::Controller::SomeController::Foo
+
+The C<Base> after (M|V|C) is automatically removed.
+
 =cut
 
 has '_trait_namespace' => (is => 'ro', default => '+Trait');
@@ -101,16 +123,24 @@ sub _trait_search_order {
 
     my @search_ns = $class->meta->class_precedence_list;
 
-    my $parent_idx    = firstidx { /^Catalyst::/ } @search_ns;
+    my $MVCC = qr/(?:Model|View|Controller|Component)/;
+
+    my $parent_idx    = firstidx { /^CatalystX?::/ } @search_ns;
     my $parent        = $search_ns[$parent_idx];
-    my ($parent_name) = $parent =~ /^Catalyst::(.*)/;
-    my ($parent_part) = $parent =~ /^Catalyst::([^:]+)/;
+
+    my ($parent_name) = $parent =~ /($MVCC(?:Base)?.+)/;
+
+    (my $resolved_parent_name = $parent_name) =~ s/($MVCC)Base\b/$1/;
+
+    my ($parent_part) = $parent =~ /($MVCC)(?:Base)?::/;
 
     my @res;
 
     for my $ns (@search_ns[0 .. $parent_idx]) {
+	my $find_part = $parent_part;
+
 	my ($part) = $ns =~ /^(.+?)::$parent_part/;
-	push @res, "${part}::${base}For::${parent_name}::$name";
+	push @res, "${part}::${base}For::${resolved_parent_name}::$name";
     }
 
     @res;
