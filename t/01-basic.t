@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More tests => 5;
+use Catalyst::Utils;
 
 {
     package Catalyst::Model::SomeModel;
@@ -14,11 +15,17 @@ use Test::More tests => 5;
 
     package MyApp::Model::MyModel;
     use base 'Catalyst::Model::SomeModel';
+    use Scalar::Util qw/blessed/;
 
     __PACKAGE__->config(
         traits => ['Foo', 'Bar'],
         foo => 'bar'
     );
+
+    sub find_app_class {
+        my $self = shift;
+        Catalyst::Utils::class2appclass(blessed($self) || $self);
+    }
 
     package MyApp::TraitFor::Model::SomeModel::Bar;
     use Moose::Role;
@@ -44,3 +51,9 @@ is $instance->foo, 'bar',
 
 is $instance->bar, 'baz',
     'trait initialized from app config works';
+
+TODO: {
+    local $TODO = "Finding by class name can't work as we're now an anon class...";
+    is $instance->find_app_class, 'MyApp', 'Can find app class passing instance';
+}
+
