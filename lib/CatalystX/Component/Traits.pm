@@ -33,7 +33,7 @@ our $AUTHORITY = 'id:RKITOVER';
 
     __PACKAGE__->config('Model::MyModel' => {
         traits => ['SearchedForTrait', '+Fully::Qualified::Trait']
-    });    
+    });
 
 =head1 DESCRIPTION
 
@@ -76,7 +76,7 @@ For:
     Catalyst::Controller
     Catalyst::Model
     Catalyst::Component
-    Moose::Object 
+    Moose::Object
 
 With:
 
@@ -152,7 +152,7 @@ sub _trait_search_order {
 #
 #	# no non-core crap in the Moose:: namespace
 #	$part = 'MooseX' if $part eq 'Moose';
-#	
+#
 #	push @res, "${part}::${base}For::${rest}::$name";
 #    }
 #
