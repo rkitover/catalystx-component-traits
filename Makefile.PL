@@ -8,7 +8,7 @@ license  'perl';
 test_requires 'Test::More';
 
 requires 'Catalyst::Runtime'         => '5.80005';
-requires 'MooseX::Traits::Pluggable' => '0.04';
+requires 'MooseX::Traits::Pluggable' => '0.06';
 requires 'namespace::autoclean';
 requires 'Moose::Autobox';
 requires 'List::MoreUtils';
