@@ -4,17 +4,17 @@ use Test::More tests => 6;
 use Catalyst::Utils;
 
 {
-    package Catalyst::Model::SomeModel;
+    package Catalyst::Controller::SomeModel;
     use Moose;
-    extends 'Catalyst::Model';
+    extends 'Catalyst::Controller';
     with 'CatalystX::Component::Traits';
 
-    package Catalyst::TraitFor::Model::SomeModel::Foo;
+    package Catalyst::TraitFor::Controller::SomeModel::Foo;
     use Moose::Role;
     has 'foo' => (is => 'ro');
 
-    package MyApp::Model::MyModel;
-    use base 'Catalyst::Model::SomeModel';
+    package MyApp::Controller::MyModel;
+    use base 'Catalyst::Controller::SomeModel';
     use Scalar::Util qw/blessed/;
 
     __PACKAGE__->config(
@@ -24,26 +24,26 @@ use Catalyst::Utils;
 
     sub find_app_class {
         my $self = shift;
-        Catalyst::Utils::class2appclass(blessed($self) || $self);
+        blessed($self->_application) || $self->_application;
     }
 
-    package MyApp::TraitFor::Model::SomeModel::Bar;
+    package MyApp::TraitFor::Controller::SomeModel::Bar;
     use Moose::Role;
     has 'bar' => (is => 'ro');
 }
 
 my $app_class = 'MyApp';
 
-ok((my $instance = MyApp::Model::MyModel->COMPONENT(
+ok((my $instance = MyApp::Controller::MyModel->COMPONENT(
         $app_class,
         { bar => 'baz' }
     )),
     'created a component instance');
 
-ok(($instance->does('Catalyst::TraitFor::Model::SomeModel::Foo')),
+ok(($instance->does('Catalyst::TraitFor::Controller::SomeModel::Foo')),
     'instance had parent ns trait loaded from component config');
 
-ok(($instance->does('MyApp::TraitFor::Model::SomeModel::Bar')),
+ok(($instance->does('MyApp::TraitFor::Controller::SomeModel::Bar')),
     'instance had app ns trait loaded from component config');
 
 is $instance->foo, 'bar',
