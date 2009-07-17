@@ -99,13 +99,13 @@ sub COMPONENT {
     $args = $class->merge_config_hashes($class->config, $args);
 
     if (my $traits = delete $args->{traits}) {
-	return $class->new_with_traits({
-	    traits => $traits,
-	    %$args
-	});
+	    return $class->new_with_traits( $app, {
+	        traits => $traits,
+	        %$args
+	    });
     }
 
-    return $class->new($args);
+    return $class->new($app, $args);
 }
 
 sub _find_trait {

@@ -4,17 +4,17 @@ use Test::More tests => 6;
 use Catalyst::Utils;
 
 {
-    package Catalyst::Controller::SomeModel;
+    package Catalyst::Controller::SomeController;
     use Moose;
     extends 'Catalyst::Controller';
     with 'CatalystX::Component::Traits';
 
-    package Catalyst::TraitFor::Controller::SomeModel::Foo;
+    package Catalyst::TraitFor::Controller::SomeController::Foo;
     use Moose::Role;
     has 'foo' => (is => 'ro');
 
-    package MyApp::Controller::MyModel;
-    use base 'Catalyst::Controller::SomeModel';
+    package MyApp::Controller::MyController;
+    use base 'Catalyst::Controller::SomeController';
     use Scalar::Util qw/blessed/;
 
     __PACKAGE__->config(
@@ -27,23 +27,27 @@ use Catalyst::Utils;
         blessed($self->_application) || $self->_application;
     }
 
-    package MyApp::TraitFor::Controller::SomeModel::Bar;
+    package MyApp::TraitFor::Controller::SomeController::Bar;
     use Moose::Role;
     has 'bar' => (is => 'ro');
+
+    package MyApp;
+    use Moose;
+
+    extends 'Catalyst';
 }
 
 my $app_class = 'MyApp';
-
-ok((my $instance = MyApp::Controller::MyModel->COMPONENT(
+ok((my $instance = MyApp::Controller::MyController->COMPONENT(
         $app_class,
         { bar => 'baz' }
     )),
     'created a component instance');
 
-ok(($instance->does('Catalyst::TraitFor::Controller::SomeModel::Foo')),
+ok(($instance->does('Catalyst::TraitFor::Controller::SomeController::Foo')),
     'instance had parent ns trait loaded from component config');
 
-ok(($instance->does('MyApp::TraitFor::Controller::SomeModel::Bar')),
+ok(($instance->does('MyApp::TraitFor::Controller::SomeController::Bar')),
     'instance had app ns trait loaded from component config');
 
 is $instance->foo, 'bar',
@@ -52,8 +56,5 @@ is $instance->foo, 'bar',
 is $instance->bar, 'baz',
     'trait initialized from app config works';
 
-TODO: {
-    local $TODO = "Finding by class name can't work as we're now an anon class...";
-    is $instance->find_app_class, 'MyApp', 'Can find app class passing instance';
-}
+is $instance->find_app_class, 'MyApp', 'Can find app class passing instance';
 
