@@ -3,10 +3,9 @@ use warnings;
 use Test::More;
 
 unless (
-    eval { require version; require MooseX::MethodAttributes; MooseX::MethodAttributes->VERSION('0.14_01'); }
-    and eval { require MooseX::Traits::Pluggable; MooseX::Traits::Pluggable->VERSION('0.05'); }
+    eval { require version; require MooseX::MethodAttributes; MooseX::MethodAttributes->VERSION('0.15'); }
 ) {
-    plan skip_all => 'Need MooseX::MethodAttributes 0.14_01 and MooseX::Traits::Pluggable 0.05 for this test';
+    plan skip_all => 'Need MooseX::MethodAttributes 0.15 for this test';
     exit;
 }
 
