@@ -111,11 +111,13 @@ sub COMPONENT {
 sub _find_trait {
     my ($class, $base, $name) = @_;
 
+    my @tried;
     for my $trait ($class->_trait_search_order($base, $name)) {
+        push @tried, $trait;
         return $trait if eval { Class::MOP::load_class($trait) };
     }
 
-    croak "Could not find a class for trait: $name";
+    croak "Could not find a class for trait: $name (tried " . join(',', @tried) . ")";
 }
 
 sub _trait_search_order {
