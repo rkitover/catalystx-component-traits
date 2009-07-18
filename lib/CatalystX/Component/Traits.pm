@@ -111,7 +111,7 @@ sub COMPONENT {
 sub _find_trait {
     my ($class, $base, $name) = @_;
 
-    my @tried;
+    my @tried; # FIXME - This sux, use load_first_existing_class ?
     for my $trait ($class->_trait_search_order($base, $name)) {
         push @tried, $trait;
         return $trait if eval { Class::MOP::load_class($trait) };
