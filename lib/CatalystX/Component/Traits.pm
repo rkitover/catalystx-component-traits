@@ -4,7 +4,8 @@ use namespace::autoclean;
 use Moose::Role;
 use Moose::Autobox;
 use Carp;
-use List::MoreUtils 'firstidx';
+use List::MoreUtils qw/firstidx any uniq/;
+use Scalar::Util 'reftype';
 with 'MooseX::Traits::Pluggable' => { excludes => ['_find_trait'] };
 
 =head1 NAME
@@ -14,11 +15,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.05
+Version 0.06
 
 =cut
 
-our $VERSION   = '0.05';
+our $VERSION   = '0.06';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
@@ -89,23 +90,100 @@ Search order for C<Foo> will be:
 
 The C<Base> after (M|V|C) is automatically removed.
 
+=head1 TRAIT MERGING
+
+Traits from component class config and app config are automatically merged if
+you set the C<_trait_merge> attribute default, e.g.:
+
+    has '+_trait_merge' => (default => 1);
+
+You can remove component class config traits by prefixing their names with a
+C<-> in the app config traits.
+
+For example:
+
+    package Catalyst::Model::Foo;
+    has '+_trait_merge' => (default => 1);
+    __PACKAGE__->config->{traits} = [qw/Foo Bar/];
+
+    package MyApp;
+    __PACKAGE__->config->{'Model::Foo'}{traits} = [qw/-Foo Baz/];
+
+Will load the traits:
+
+    Bar Baz
+
 =cut
 
-has '_trait_namespace' => (is => 'ro', default => '+Trait');
+# override MX::Traits attribute
+has '_trait_namespace' => (
+    init_arg => undef,
+    isa      => 'Str',
+    (Moose->VERSION >= 0.84 ) ? (is => 'bare') : (),
+    default  => '+Trait',
+);
+
+has '_trait_merge' => (
+    init_arg => undef,
+    isa      => 'Str',
+    (Moose->VERSION >= 0.84 ) ? (is => 'bare') : (),
+    default  => 0,
+);
 
 sub COMPONENT {
     my ($class, $app, $args) = @_;
 
-    $args = $class->merge_config_hashes($class->config, $args);
+    my %class_config = %{ $class->config };
+    my %app_config   = %$args;
 
-    if (my $traits = delete $args->{traits}) {
-	    return $class->new_with_traits( $app, {
-	        traits => $traits,
-	        %$args
-	    });
+    my $traits = $class->_merge_traits(
+	delete $class_config{traits},
+	delete $app_config{traits},
+    );
+
+    $args = $class->merge_config_hashes(\%class_config, \%app_config);
+
+    if ($traits) {
+	return $class->new_with_traits($app, {
+	    traits => $traits,
+	    %$args
+	});
     }
 
     return $class->new($app, $args);
+}
+
+sub _merge_traits {
+    my $class        = shift;
+    my $left_traits  = shift || [];
+    my $right_traits = shift || [];
+
+    my $should_merge =
+	eval { $class->meta->find_attribute_by_name('_trait_merge')->default };
+    $should_merge = $should_merge->()
+	if ref($should_merge) && reftype($should_merge) eq 'CODE';
+
+    unless ($should_merge) {
+	return $right_traits || $left_traits;
+    }
+
+    my (@left_traits, @right_traits, @to_remove);
+
+    for my $trait (@$right_traits) {
+	if ($trait =~ /^-(.*)/) {
+	    push @to_remove, $1;
+	} else {
+	    push @right_traits, $trait;
+	}
+    }
+    @left_traits = @$left_traits;
+
+    my @traits = grep {
+	my $trait = $_;
+	not any { $trait eq $_ } @to_remove;
+    } (@left_traits, @right_traits);
+
+    return [ uniq @traits ];
 }
 
 sub _find_trait {
@@ -161,7 +239,11 @@ sub _trait_search_order {
 
 =head1 AUTHOR
 
-Rafael Kitover, C<< <rkitover at cpan.org> >>
+Rafael Kitover, C<< <rkitover@cpan.org> >>
+
+=head1 CONTRIBUTORS
+
+Tomas Doran, C<< <bobtfish@bobtfish.net> >>
 
 =head1 BUGS
 
