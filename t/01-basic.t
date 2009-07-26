@@ -15,8 +15,8 @@ use Catalyst::Utils;
     has 'foo' => (is => 'ro');
 
     package MyApp::Controller::MyController;
-    use base 'Catalyst::Controller::SomeController';
-    use Scalar::Util qw/blessed/;
+    use Moose;
+    extends 'Catalyst::Controller::SomeController';
 
     __PACKAGE__->config(
         traits => ['Foo', 'Bar', 'Baz'],
@@ -49,6 +49,12 @@ use Catalyst::Utils;
 
     $INC{'MyApp/Controller/MyController.pm'} = 1;
     __PACKAGE__->setup;
+
+# this is necessary for perl 5.8
+# I have no idea why
+# please kill it
+    __PACKAGE__->components->{'MyApp::Controller::MyController'} =
+        __PACKAGE__->setup_component('MyApp::Controller::MyController');
 }
 
 my $app_class = 'MyApp';
