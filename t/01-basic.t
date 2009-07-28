@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 6;
+use Test::More tests => 7;
 use Catalyst::Utils;
 
 {
@@ -8,17 +8,18 @@ use Catalyst::Utils;
     use Moose;
     extends 'Catalyst::Controller';
     with 'CatalystX::Component::Traits';
+    has '+_trait_merge' => (default => 1);
 
     package Catalyst::TraitFor::Controller::SomeController::Foo;
     use Moose::Role;
     has 'foo' => (is => 'ro');
 
     package MyApp::Controller::MyController;
-    use base 'Catalyst::Controller::SomeController';
-    use Scalar::Util qw/blessed/;
+    use Moose;
+    extends 'Catalyst::Controller::SomeController';
 
     __PACKAGE__->config(
-        traits => ['Foo', 'Bar'],
+        traits => ['Foo', 'Bar', 'Baz'],
         foo => 'bar'
     );
 
@@ -31,10 +32,29 @@ use Catalyst::Utils;
     use Moose::Role;
     has 'bar' => (is => 'ro');
 
+    package MyApp::TraitFor::Controller::SomeController::Baz;
+    use Moose::Role;
+    has 'baz' => (is => 'ro');
+
+    package MyApp::TraitFor::Controller::SomeController::Quux;
+    use Moose::Role;
+    has 'quux' => (is => 'ro');
+
     package MyApp;
     use Moose;
-
     extends 'Catalyst';
+
+    __PACKAGE__->config->{'Controller::MyController'}{traits} =
+        ['-Baz', 'Quux'];
+
+    $INC{'MyApp/Controller/MyController.pm'} = 1;
+    __PACKAGE__->setup;
+
+# this is necessary for perl 5.8
+# I have no idea why
+# please kill it
+    __PACKAGE__->components->{'MyApp::Controller::MyController'} =
+        __PACKAGE__->setup_component('MyApp::Controller::MyController');
 }
 
 my $app_class = 'MyApp';
@@ -50,11 +70,16 @@ ok(($instance->does('Catalyst::TraitFor::Controller::SomeController::Foo')),
 ok(($instance->does('MyApp::TraitFor::Controller::SomeController::Bar')),
     'instance had app ns trait loaded from component config');
 
-is $instance->foo, 'bar',
+is eval { $instance->foo }, 'bar',
     'trait initialized from component config works';
 
-is $instance->bar, 'baz',
+is eval { $instance->bar }, 'baz',
     'trait initialized from app config works';
 
 is $instance->find_app_class, 'MyApp', 'Can find app class passing instance';
 
+is_deeply(
+    MyApp->controller('MyController')->_traits,
+    [qw/Foo Bar Quux/],
+    'traits merged correctly'
+);

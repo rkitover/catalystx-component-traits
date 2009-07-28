@@ -12,6 +12,7 @@ requires 'MooseX::Traits::Pluggable' => '0.06';
 requires 'namespace::autoclean';
 requires 'Moose::Autobox';
 requires 'List::MoreUtils';
+requires 'Scalar::Util';
 
 auto_provides;
 auto_install;
