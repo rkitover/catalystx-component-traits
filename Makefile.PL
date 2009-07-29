@@ -14,6 +14,8 @@ requires 'Moose::Autobox';
 requires 'List::MoreUtils';
 requires 'Scalar::Util';
 
+test_requires 'Module::Pluggable' => '3.9';
+
 auto_provides;
 auto_install;
 
