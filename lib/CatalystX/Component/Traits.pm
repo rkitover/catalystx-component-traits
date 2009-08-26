@@ -2,7 +2,6 @@ package CatalystX::Component::Traits;
 
 use namespace::autoclean;
 use Moose::Role;
-use Moose::Autobox;
 use Carp;
 use List::MoreUtils qw/firstidx any uniq/;
 use Scalar::Util 'reftype';
@@ -15,11 +14,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.08
+Version 0.09
 
 =cut
 
-our $VERSION   = '0.08';
+our $VERSION   = '0.09';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
@@ -137,17 +136,17 @@ sub COMPONENT {
     my %app_config   = %$args;
 
     my $traits = $class->_merge_traits(
-	delete $class_config{traits},
-	delete $app_config{traits},
+        delete $class_config{traits},
+        delete $app_config{traits},
     );
 
     $args = $class->merge_config_hashes(\%class_config, \%app_config);
 
     if ($traits) {
-	return $class->new_with_traits($app, {
-	    traits => $traits,
-	    %$args
-	});
+        return $class->new_with_traits($app, {
+            traits => $traits,
+            %$args
+        });
     }
 
     return $class->new($app, $args);
@@ -159,28 +158,31 @@ sub _merge_traits {
     my $right_traits = shift || [];
 
     my $should_merge =
-	eval { $class->meta->find_attribute_by_name('_trait_merge')->default };
+        eval { $class->meta->find_attribute_by_name('_trait_merge')->default };
     $should_merge = $should_merge->()
-	if ref($should_merge) && reftype($should_merge) eq 'CODE';
+        if ref($should_merge) && reftype($should_merge) eq 'CODE';
 
     unless ($should_merge) {
-	return $right_traits || $left_traits;
+        my @right_traits = ref($right_traits) ? @$right_traits : $right_traits;
+        my @left_traits  = ref($left_traits)  ? @$left_traits  : $left_traits;
+
+        return @right_traits ? \@right_traits : \@left_traits;
     }
 
     my (@left_traits, @right_traits, @to_remove);
 
     for my $trait (@$right_traits) {
-	if ($trait =~ /^-(.*)/) {
-	    push @to_remove, $1;
-	} else {
-	    push @right_traits, $trait;
-	}
+        if ($trait =~ /^-(.*)/) {
+            push @to_remove, $1;
+        } else {
+            push @right_traits, $trait;
+        }
     }
     @left_traits = @$left_traits;
 
     my @traits = grep {
-	my $trait = $_;
-	not any { $trait eq $_ } @to_remove;
+        my $trait = $_;
+        not any { $trait eq $_ } @to_remove;
     } (@left_traits, @right_traits);
 
     return [ uniq @traits ];
@@ -217,10 +219,10 @@ sub _trait_search_order {
     my @res;
 
     for my $ns (@search_ns[0 .. $parent_idx]) {
-	my $find_part = $parent_part;
+        my $find_part = $parent_part;
 
-	my ($part) = $ns =~ /^(.+?)::$parent_part/;
-	push @res, "${part}::${base}For::${resolved_parent_name}::$name";
+        my ($part) = $ns =~ /^(.+?)::$parent_part/;
+        push @res, "${part}::${base}For::${resolved_parent_name}::$name";
     }
 
     @res;
@@ -228,12 +230,12 @@ sub _trait_search_order {
 
 # we'll come back to this later...
 #    for my $ns (@search_ns[($parent_idx+1) .. $#search_ns]) {
-#	my ($part, $rest) = split /::/, $ns, 2;
+#       my ($part, $rest) = split /::/, $ns, 2;
 #
-#	# no non-core crap in the Moose:: namespace
-#	$part = 'MooseX' if $part eq 'Moose';
+#       # no non-core crap in the Moose:: namespace
+#       $part = 'MooseX' if $part eq 'Moose';
 #
-#	push @res, "${part}::${base}For::${rest}::$name";
+#       push @res, "${part}::${base}For::${rest}::$name";
 #    }
 #
 #    @res;
