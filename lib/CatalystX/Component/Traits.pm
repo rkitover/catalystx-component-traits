@@ -14,11 +14,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS
@@ -207,16 +207,24 @@ sub _trait_search_order {
 
     my $MVCC = qr/(?:Model|View|Controller|Component)/;
 
-    my $parent_idx    =
+    my $possible_parent_idx =
         (firstidx { /^CatalystX?::/ } @search_ns[1 ..  $#search_ns]) + 1;
 
-    my $parent        = $search_ns[$parent_idx];
+    my ($parent, $parent_idx, $parent_name, $parent_name_partial);
 
-    my ($parent_name) = $parent =~ /($MVCC(?:Base)?.+)/;
+    for my $try_parent ($possible_parent_idx, 0) {
+        $parent_idx = $try_parent;
+        $parent     = $search_ns[$parent_idx];
+
+        ($parent_name, $parent_name_partial) =
+            $parent =~ /($MVCC(?:Base)? (?: ::)? (.*))/x;
+
+        last if $parent_name_partial; # otherwise root level component
+    }
 
     (my $resolved_parent_name = $parent_name) =~ s/($MVCC)Base\b/$1/;
 
-    my ($parent_part) = $parent =~ /($MVCC)(?:Base)?::/;
+    my ($parent_part) = $parent =~ /($MVCC) (?:Base)? (?: ::)?/x;
 
     my @res;
 

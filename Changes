@@ -1,5 +1,8 @@
 Revision history for CatalystX-Component-Traits
 
+0.12  2009-10-30 16:47:15
+    - add support for root-level components
+
 0.11  2009-10-30 14:25:56
     - fix bug with apps named CatalystX::<something>
 
