@@ -1,5 +1,6 @@
 Revision history for CatalystX-Component-Traits
 
+0.13  2009-11-07 21:14:11
    - Fix merging singular traits rather than lists of traits.
 
 0.12  2009-10-30 16:47:15
