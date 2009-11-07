@@ -162,26 +162,17 @@ sub _merge_traits {
     $should_merge = $should_merge->()
         if ref($should_merge) && reftype($should_merge) eq 'CODE';
 
+    my @right_traits = ref($right_traits) ? @$right_traits : $right_traits;
+    my @left_traits  = ref($left_traits)  ? @$left_traits  : $left_traits;
     unless ($should_merge) {
-        my @right_traits = ref($right_traits) ? @$right_traits : $right_traits;
-        my @left_traits  = ref($left_traits)  ? @$left_traits  : $left_traits;
-
         return @right_traits ? \@right_traits : \@left_traits;
     }
 
-    my (@left_traits, @right_traits, @to_remove);
-
-    for my $trait (@$right_traits) {
-        if ($trait =~ /^-(.*)/) {
-            push @to_remove, $1;
-        } else {
-            push @right_traits, $trait;
-        }
-    }
-    @left_traits = @$left_traits;
+    my @to_remove = map { s/^-// and $_ } @left_traits, @right_traits;;
 
     my @traits = grep {
         my $trait = $_;
+        $trait =~ /^-/ and return;
         not any { $trait eq $_ } @to_remove;
     } (@left_traits, @right_traits);
 
