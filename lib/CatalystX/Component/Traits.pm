@@ -168,11 +168,12 @@ sub _merge_traits {
         return @right_traits ? \@right_traits : \@left_traits;
     }
 
-    my @to_remove = map { s/^-// and $_ } @left_traits, @right_traits;;
+    my @to_remove = map { /^-(.*)/ ? $1 : () } @left_traits, @right_traits;
+    @left_traits  = grep !/^-/, @left_traits;
+    @right_traits = grep !/^-/, @right_traits;
 
     my @traits = grep {
         my $trait = $_;
-        $trait =~ /^-/ and return;
         not any { $trait eq $_ } @to_remove;
     } (@left_traits, @right_traits);
 
