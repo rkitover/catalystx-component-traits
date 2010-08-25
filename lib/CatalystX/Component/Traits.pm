@@ -5,7 +5,7 @@ use Moose::Role;
 use Carp;
 use List::MoreUtils qw/firstidx any uniq/;
 use Scalar::Util 'reftype';
-with 'MooseX::Traits::Pluggable' => { excludes => ['_find_trait'] };
+with 'MooseX::Traits::Pluggable' => { -excludes => ['_find_trait'] };
 
 =head1 NAME
 
