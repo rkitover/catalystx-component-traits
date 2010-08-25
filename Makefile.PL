@@ -2,7 +2,7 @@ use inc::Module::Install;
 
 name     'CatalystX-Component-Traits';
 all_from 'lib/CatalystX/Component/Traits.pm';
-author   'Rafael Kitover <rkitover@cpan.org>';
+author   'Rafael Kitover <bobtfish@cpan.org>';
 license  'perl';
 
 test_requires 'Test::More' => '0.88';
@@ -19,6 +19,6 @@ auto_provides;
 auto_install;
 
 resources repository =>
-    'git://github.com/rkitover/catalystx-component-traits.git';
+    'git://github.com/bobtfish/catalystx-component-traits.git';
 
 WriteAll;
