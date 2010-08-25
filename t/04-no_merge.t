@@ -57,7 +57,7 @@ is eval { MyApp->controller('MyController')->bar }, 'baz',
     'trait initialized from app config works';
 
 is_deeply(
-    MyApp->controller('MyController')->_traits,
-    [qw/Foo Bar Baz/],
+    [MyApp->controller('MyController')->meta->calculate_all_roles]->[0]->name,
+    'Catalyst::TraitFor::Controller::SomeController::Foo|MyApp::TraitFor::Controller::SomeController::Bar|MyApp::TraitFor::Controller::SomeController::Baz',
     'traits from app config override traits from component config'
 );
