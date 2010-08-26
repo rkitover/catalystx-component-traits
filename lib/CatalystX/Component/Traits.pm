@@ -14,11 +14,11 @@ Catalyst Components
 
 =head1 VERSION
 
-Version 0.14
+Version 0.16
 
 =cut
 
-our $VERSION   = '0.14';
+our $VERSION   = '0.16';
 our $AUTHORITY = 'id:RKITOVER';
 
 =head1 SYNOPSIS

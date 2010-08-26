@@ -1,5 +1,8 @@
 Revision history for CatalystX-Component-Traits
 
+0.16 2010-08-26 19:07:00
+    - Neglected to bump the version in last release.
+
 0.15 2010-08-25 19:09:00
     - Change excludes to -excludes when using MooseX::Traits::Pluggable
       to avoid the deprecation warning.
