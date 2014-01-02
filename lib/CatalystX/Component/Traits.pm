@@ -5,6 +5,8 @@ use Moose::Role;
 use Carp;
 use List::MoreUtils qw/firstidx any uniq/;
 use Scalar::Util 'reftype';
+use Class::Load qw/ load_first_existing_class /;
+
 with 'MooseX::Traits::Pluggable' => { -excludes => ['_find_trait'] };
 
 =head1 NAME
@@ -183,13 +185,7 @@ sub _merge_traits {
 sub _find_trait {
     my ($class, $base, $name) = @_;
 
-    my @tried; # FIXME - This sux, use load_first_existing_class ?
-    for my $trait ($class->_trait_search_order($base, $name)) {
-        push @tried, $trait;
-        return $trait if eval { Class::MOP::load_class($trait) };
-    }
-
-    croak "Could not find a class for trait: $name (tried " . join(',', @tried) . ")";
+    load_first_existing_class($class->_trait_search_order($base, $name));
 }
 
 sub _trait_search_order {

@@ -12,6 +12,7 @@ requires 'MooseX::Traits::Pluggable' => '0.08';
 requires 'namespace::autoclean';
 requires 'List::MoreUtils';
 requires 'Scalar::Util';
+requires 'Class::Load';
 
 test_requires 'Module::Pluggable' => '3.9';
 

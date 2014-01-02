@@ -1,5 +1,7 @@
 Revision history for CatalystX-Component-Traits
 
+    - Fix RT#91014
+
 0.16 2010-08-26 19:07:00
     - Neglected to bump the version in last release.
 
