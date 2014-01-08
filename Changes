@@ -1,4 +1,7 @@
-Revision history for CatalystX-Component-Traits
+Revision history for CatalystX::Component::Traits
+
+{{$NEXT}}
+    - convert to dzil
 
 0.14  2009-11-08 05:43:37
     - minor code cleanup
