@@ -73,7 +73,7 @@ is eval { $instance->bar }, 'baz',
 is $instance->find_app_class, 'MyApp', 'Can find app class passing instance';
 
 is_deeply(
-    MyApp->controller('MyController')->_traits,
-    [qw/Foo Bar Quux/],
+    [MyApp->controller('MyController')->meta->calculate_all_roles]->[0]->name,
+    'Catalyst::TraitFor::Controller::SomeController::Foo|MyApp::TraitFor::Controller::SomeController::Bar|MyApp::TraitFor::Controller::SomeController::Quux',
     'traits merged correctly'
 );
