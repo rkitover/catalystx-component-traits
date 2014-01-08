@@ -12,7 +12,13 @@ use Test::More tests => 2;
     use base 'CatalystX::Something::ControllerBase::SomeController';
 }
 
-ok((my $instance = My::App::Controller::AController->new), 'instance');
+# squash warning from catalyst
+my $instance;
+{
+    local $SIG{__WARN__} = sub {};
+
+    ok(($instance = My::App::Controller::AController->new), 'instance');
+}
 
 is_deeply [$instance->_trait_search_order('Trait', 'Foo')], [
     'My::App::TraitFor::Controller::SomeController::Foo',

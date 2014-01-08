@@ -2,6 +2,7 @@ Revision history for CatalystX::Component::Traits
 
 {{$NEXT}}
     - convert to dzil
+    - replace Class::MOP::load_class with Class::Load::load_class
 
 0.14  2009-11-08 05:43:37
     - minor code cleanup
