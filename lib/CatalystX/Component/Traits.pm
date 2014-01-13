@@ -10,8 +10,7 @@ with 'MooseX::Traits::Pluggable' => { -excludes => ['_find_trait'] };
 
 =head1 NAME
 
-CatalystX::Component::Traits - Automatic Trait Loading and Resolution for
-Catalyst Components
+CatalystX::Component::Traits - Automatic Trait Loading and Resolution for Catalyst Components
 
 =cut
 
